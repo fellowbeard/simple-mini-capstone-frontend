@@ -8,15 +8,44 @@
     <input type="text" v-model="productDescription" />
     Price
     <input type="decimal" v-model="productPrice" />
+    Image
+    <input type="text" v-model="productImage_url" />
 
     <button v-on:click="createProduct">Create</button>
     <div v-for="product in products" v-bind:key="product.id">
       <h2>{{ product.name }}</h2>
       <p>${{ product.price }}</p>
       <img v-bind:src="product.image_url" v-bind:alt="product.title" />
-      <p>{{ product.description }}</p>
-      <!-- <p>{{ product.image_url }}</p> -->
+      <button v-on:click="showProduct(product)">More Info</button>
     </div>
+    <dialog id="product-details">
+      <form method="dialog">
+        <h1>Product Info</h1>
+        <p>Name: {{ currentProduct.name }}</p>
+        <p>Description: {{ currentProduct.description }}</p>
+        <p>Price: {{ currentProduct.price }}</p>
+        <h1>Edit Product</h1>
+        <p>
+          Name:
+          <input v-model="currentProduct.name" type="text" />
+        </p>
+        <p>
+          Description:
+          <input v-model="currentProduct.description" type="text" />
+        </p>
+        <p>
+          Price:
+          <input v-model="currentProduct.productPrice" type="text" />
+        </p>
+        <!-- <p>
+          Image:
+          <input v-model="currentProduct.productImage_url" type="text" />
+        </p> -->
+        <button v-on:click="updateProduct()">Update</button>
+        <button v-on:click="deleteProduct(currentProduct)">Delete</button>
+        <button>Close</button>
+      </form>
+    </dialog>
   </div>
 </template>
 
@@ -28,6 +57,7 @@ export default {
     return {
       message: "The Store",
       products: [],
+      currentProduct: {},
     };
   },
   created: function () {
@@ -60,6 +90,22 @@ export default {
       //     this.productDescription = "";
       //     this.productPrice = null;
       //   };
+    },
+    showProduct(product) {
+      this.currentProduct = product;
+      document.querySelector("#product-details").showModal();
+    },
+    updateProduct() {
+      axios.patch(`http://localhost:3000/products/${this.currentProduct.id}`, this.currentProduct).then((response) => {
+        console.log("Great work!", response);
+      });
+    },
+    deleteProduct(product) {
+      axios.delete(`http://localhost:3000/products/${product.id}`).then((response) => {
+        console.log(response);
+        var index = this.products.indexOf(product);
+        this.products.splice(index, 1);
+      });
     },
   },
 };
